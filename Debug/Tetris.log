@@ -2,7 +2,7 @@
 c:\users\k\source\repos\tetris\tetris\console.h(24): warning C4838: 'int'에서 'SHORT'(으)로의 변환에는 축소 변환이 필요합니다.
 c:\users\k\source\repos\tetris\tetris\desk.h(7): warning C4273: 'MoveWindow': dll 링크가 일치하지 않습니다.
   c:\program files (x86)\windows kits\10\include\10.0.16299.0\um\winuser.h(4599): note: 'MoveWindow'의 이전 정의를 참조하십시오.
-c:\users\k\source\repos\tetris\tetris\block.h(40): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-c:\users\k\source\repos\tetris\tetris\block.h(42): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-c:\users\k\source\repos\tetris\tetris\game.h(16): warning C4838: 'int'에서 'SHORT'(으)로의 변환에는 축소 변환이 필요합니다.
+c:\users\k\source\repos\tetris\tetris\block.h(41): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+c:\users\k\source\repos\tetris\tetris\block.h(44): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+c:\users\k\source\repos\tetris\tetris\game.h(17): warning C4838: 'int'에서 'SHORT'(으)로의 변환에는 축소 변환이 필요합니다.
   Tetris.vcxproj -> C:\Users\K\source\repos\Tetris\Debug\Tetris.exe
