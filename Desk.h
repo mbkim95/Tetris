@@ -15,7 +15,7 @@ public:
 	}
 
 	void newDesk() {
-		cout << endl << "콘솔 위치 및 가로세로 크기 설정" << endl;
+		cout << endl;
 		cout << "□□□□□□□□□□□□" << endl;
 		cout << "□                    □" << endl;
 		cout << "□                    □" << endl;

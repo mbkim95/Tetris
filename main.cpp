@@ -9,7 +9,12 @@ int main() {
 	key.start(game);
 
 	game->start();
-	while (1) {
+	while (!game->isGameOver()) {
 
 	}
+	game->GameOver();
+	Sleep(2000);
+	system("cls");
+	game->fileSave("score.txt", game->getScore());
+	game->fileLoad();
 }

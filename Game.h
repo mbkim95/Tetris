@@ -1,7 +1,13 @@
 #pragma once
 #include <iostream>
+#include <fstream>
 #include <process.h>
 #include <Windows.h>
+#include <cstdlib>
+#include <ctime>
+#include <vector>
+#include <algorithm>
+#include <functional>
 #include "Console.h"
 #include "Desk.h"
 #include "Block.h"
@@ -12,6 +18,11 @@ private:
 	Desk desk;
 	Block *block;
 	int board[22][12];
+	int score = 0;
+	bool gameover = false;
+	int b = 7;
+	int t = 0;
+	int speed = 1000;
 
 	void gotoXY(int x, int y) {
 		COORD pos = { x, y };
@@ -23,18 +34,28 @@ private:
 
 		while (1) {
 			game->move();
-			Sleep(150);
 		}
 		return 0;
 	}
 
 public:
 	Game() {
-		x = 10;
-		y = 2;
+		x = 8;
+		y = 0;
 		direction = 1;
 		setting();
-		block = new Block(2);
+		srand((unsigned int)time(NULL));
+		block = new Block(rand() % b);	
+	}
+
+	void checkTime() {
+		Sleep(speed);
+		t++;
+		if (t == 60) {
+			cout << "TimeUp" << endl;
+			b = 13;
+			speed = 400;
+		}
 	}
 
 	void setting() {
@@ -52,7 +73,7 @@ public:
 		for (int i = 0; i < 22; i++) {
 			board[i][0] = 2;
 			board[i][11] = 2;
-		}
+		} 
 	}
 
 	void setDirection(int i) {
@@ -60,63 +81,146 @@ public:
 	}
 
 	void move() {
-		if (direction == 38) {
-			block->rotate();
-			direction = 2;
-		}
-		if (direction == 1) {
-			y++;
-		}
+		checkTime();
+		if (!gameover) {
+			if (direction == 38) {
+				if (canRotate())
+					block->rotate();
+				direction = 1;
+			}
+			if (direction == 1) {
+				y++;
+			}
 
-		if (direction == 40) {
-			y++;
-			direction = 1;
+			if (direction == 40) {
+				y++;
+				direction = 1;
+			}
+			else if (direction == 37) {
+				if (checkLeft())
+					x -= 2;
+				direction = 1;
+			}
+			else if (direction == 39) {
+				if (checkRight())
+					x += 2;
+				direction = 1;
+			}
+			system("cls");
+			printBoard();
+			block->setXY(x, y);
+			checkGameOver();
+			block->printBlock();			
+			deleteLine();
+			srand((unsigned int)time(NULL));
+			if (!checkDown()) {
+				x = 8;
+				y = 0;
+				int bomb = rand() % 20;
+				if (bomb == 0) {
+					block = new Block(777);
+				}
+				else {
+					block = new Block(rand() % b);
+					
+				}				  
+			}			
 		}
-		else if (direction == 37) {
-			x -= 2;
-			direction = 1;
-		}
-		else if (direction == 39) {
-			x += 2;
-			direction = 1;
-		}
-		system("cls");
-		printBlock();
-		gotoXY(x, y);
-		block->setXY(x, y);
-		deleteLine();
-		block->printBlock();
-		int chk = checkMove();
-
-		if (chk == 1) {
-			x = 8;
-			y = 2;
-			block = new Block(2);
+		else {
+			GameOver();			
+			return;
 		}
 	}
 
-	int checkMove() {
+	void GameOver() {
+		system("cls");
+		gotoXY(0, 1);
+		cout << "▩▩▩▩▩▩▩▩▩▩▩▩▩" << endl;
+		cout << "▩▩▩▩▩▩▩▩▩▩▩▩▩" << endl;
+		cout << "▩▩▩▩▩▩▩▩▩▩▩▩▩" << endl;
+		cout << "▩▩▩▩          ▩▩▩▩" << endl;
+		cout << "▩▩▩▩  ▩▩▩▩▩▩▩▩" << endl;
+		cout << "▩▩▩▩          ▩▩▩▩" << endl;
+		cout << "▩▩▩▩  ▩▩▩▩▩▩▩▩" << endl;
+		cout << "▩▩▩▩          ▩▩▩▩" << endl;
+		cout << "▩▩▩▩▩▩▩▩▩▩▩▩▩" << endl;
+		cout << "▩▩▩▩  ▩▩▩  ▩▩▩▩" << endl;
+		cout << "▩▩▩▩    ▩▩  ▩▩▩▩" << endl;
+		cout << "▩▩▩▩  ▩  ▩  ▩▩▩▩" << endl;
+		cout << "▩▩▩▩  ▩▩    ▩▩▩▩" << endl;
+		cout << "▩▩▩▩  ▩▩▩  ▩▩▩▩" << endl;
+		cout << "▩▩▩▩▩▩▩▩▩▩▩▩▩" << endl;
+		cout << "▩▩▩▩        ▩▩▩▩▩" << endl;
+		cout << "▩▩▩▩  ▩▩▩  ▩▩▩▩" << endl;
+		cout << "▩▩▩▩  ▩▩▩  ▩▩▩▩" << endl;
+		cout << "▩▩▩▩  ▩▩▩  ▩▩▩▩" << endl;
+		cout << "▩▩▩▩        ▩▩▩▩▩" << endl;
+		cout << "▩▩▩▩▩▩▩▩▩▩▩▩▩" << endl;
+		cout << "▩▩▩▩▩▩▩▩▩▩▩▩▩" << endl;
+	}
+
+	int checkGameOver() {
+		int x = block->getX();
+		int y = block->getY();
+
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				if (block->isFilled(j, i) && board[y + i][x / 2 + j] != 0) {
+					gameover = true;
+					return 1;
+				}
+			}
+		}
+		return 0;
+	}
+
+	int checkDown() {
 		int x = block->getX();
 		int y = block->getY();
 		for (int i = 0; i < 4; i++) {
 			int y_max = block->getMaxY(i);
 			if (y_max >= 0 && board[y + y_max + 1][x / 2 + i] != 0) {
 				fillBlock();
-				return 1;
+				return 0;
 			}
 		}
-		return 0;
+		return 1;
+	}
+
+	int checkRight() {
+		int x = block->getX();
+		int y = block->getY();
+		for (int i = 0; i < 4; i++) {
+			int x_max = block->getMaxX(i);
+			if (x_max >= 0 && board[y + i][x / 2 + x_max + 1] != 0) {				
+				return 0;
+			}
+		}
+		return 1;
+	}
+
+	int checkLeft() {
+		int x = block->getX();
+		int y = block->getY();
+		for (int i = 0; i < 4; i++) {
+			int x_min = block->getMinX(i);
+			if (x_min >= 0 && board[y + i][x / 2 + x_min - 1] != 0) {
+				return 0;
+			}
+		}
+		return 1;
 	}
 
 	void deleteLine(){
 		for (int i = 20; i >= 1; i--) {
 			if (checkLine(i)) {
+				score += 10;
 				for (int j = 1; j < 11; j++) {
 					board[i][j] = 0;
 				}
 				pullLine(i);
 			}
-		}
+		}		
 	}
 
 	void pullLine(int y) {
@@ -138,9 +242,36 @@ public:
 		return 1;
 	}
 
+	int canRotate() {
+		int x = block->getX();
+		int y = block->getY();	
+
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				if (block->isFilled_rotation(j, i))
+					if(board[y + i][x / 2 + j] != 0)
+						return 0;
+			}
+		}
+		return 1;
+	}
+
+	void clearBoard() {
+		for(int i=1; i<21; i++)
+			for (int j = 1; j < 11; j++) {
+				board[i][j] = 0;
+			}
+	}
+
 	void fillBlock() {
 		int x = block->getX();
 		int y = block->getY();
+
+		if (block->isBomb()) {
+			clearBoard();
+			delete block;
+			return;
+		}
 
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
@@ -149,11 +280,10 @@ public:
 				}
 			}
 		}
-		y = 2;
-		block = new Block(1);
+		delete block;
 	}
 
-	void printBlock() {
+	void printBoard() {
 		printf("\n");
 		for (int i = 0; i < 22; i++) {
 			for (int j = 0; j < 12; j++) {
@@ -167,6 +297,59 @@ public:
 			}
 			printf("\n");
 		}
+		printf("\n SCORE : %d\n", score);
+	}
+
+	void fileLoad() {
+		ifstream ifs;
+
+		ifs.open("score.txt");				// list.txt 파일을 읽어옵니다.
+
+		if (!ifs) {
+			cout << "파일을 열 수 없습니다.";
+			exit(0);
+		}
+		int data;
+
+		vector<int> v;
+
+		while (ifs >> data) {
+			v.push_back(data);
+		}
+
+		cout << endl;
+		cout << "My score : " << data << endl;
+		cout << endl;
+		sort(v.begin(), v.end(),greater<int>());
+
+		for (int i = 0; i < v.size(); i++) {
+			cout << i + 1 << " : " << v[i] << endl;
+		}
+
+		ifs.close();
+	}
+
+	void fileSave(string filename, int score) {
+		ofstream ofs;
+
+		ofs.open(filename, ios::app);
+
+		if (!ofs) {
+			cout << "파일을 저장할 수 없습니다.";
+			exit(0);
+		}
+
+		ofs << score << endl;
+
+		ofs.close();
+	}
+
+	int getScore() {
+		return this->score;
+	}
+
+	bool isGameOver() {
+		return this->gameover;
 	}
 
 	void start() {

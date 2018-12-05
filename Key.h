@@ -21,7 +21,7 @@ private:
 			if (temp > 36 && temp < 41)
 				key->game->setDirection(temp);
 		}
-		return 0;
+		return 0; 
 	}
 public:
 	KeyEvent() {
